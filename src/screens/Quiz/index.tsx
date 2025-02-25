@@ -8,6 +8,7 @@ import Animated, {
   interpolate,
   withTiming,
   useAnimatedScrollHandler,
+  Extrapolation,
 } from "react-native-reanimated";
 
 import { useNavigation, useRoute } from "@react-navigation/native";
@@ -137,6 +138,34 @@ export function Quiz() {
       backgroundColor: THEME.COLORS.GREY_500,
       width: "110%",
       left: "-5%",
+      opacity: interpolate(
+        scrollY.value,
+        [50, 90],
+        [0, 1],
+        Extrapolation.CLAMP
+      ),
+      transform: [
+        {
+          translateY: interpolate(
+            scrollY.value,
+            [50, 100],
+            [-40, 0],
+            Extrapolation.CLAMP
+          ),
+        },
+      ],
+      zIndex: 1,
+    };
+  });
+
+  const headerStyles = useAnimatedStyle(() => {
+    return {
+      opacity: interpolate(
+        scrollY.value,
+        [60, 90],
+        [1, 0],
+        Extrapolation.CLAMP
+      ),
     };
   });
 
@@ -171,11 +200,13 @@ export function Quiz() {
         onScroll={scrollHandler}
         scrollEventThrottle={16}
       >
-        <QuizHeader
-          title={quiz.title}
-          currentQuestion={currentQuestion + 1}
-          totalOfQuestions={quiz.questions.length}
-        />
+        <Animated.View style={[styles.header, headerStyles]}>
+          <QuizHeader
+            title={quiz.title}
+            currentQuestion={currentQuestion + 1}
+            totalOfQuestions={quiz.questions.length}
+          />
+        </Animated.View>
 
         <Animated.View style={shakeStyleAnimated}>
           <Question
