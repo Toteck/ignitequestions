@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import { useNavigation } from "@react-navigation/native";
 
@@ -10,7 +10,9 @@ import Animated, {
   SlideOutRight,
 } from "react-native-reanimated";
 
-import Swipeable from "react-native-gesture-handler/ReanimatedSwipeable";
+import Swipeable, {
+  SwipeableMethods,
+} from "react-native-gesture-handler/ReanimatedSwipeable";
 
 import { HouseLine, Trash } from "phosphor-react-native";
 
@@ -29,6 +31,8 @@ export function History() {
 
   const { goBack } = useNavigation();
 
+  const swipeableRefs = useRef<SwipeableMethods[]>([]);
+
   async function fetchHistory() {
     const response = await historyGetAll();
     setHistory(response);
@@ -41,7 +45,9 @@ export function History() {
     fetchHistory();
   }
 
-  function handleRemove(id: string) {
+  function handleRemove(id: string, index: number) {
+    swipeableRefs.current?.[index].close();
+
     Alert.alert("Remover", "Deseja remover esse registro?", [
       {
         text: "Sim",
@@ -72,7 +78,7 @@ export function History() {
         contentContainerStyle={styles.history}
         showsVerticalScrollIndicator={false}
       >
-        {history.map((item) => (
+        {history.map((item, index) => (
           <Animated.View
             key={item.id}
             entering={SlideInRight}
@@ -80,12 +86,17 @@ export function History() {
             layout={LinearTransition.springify()}
           >
             <Swipeable
+              ref={(ref) => {
+                if (ref) {
+                  swipeableRefs.current.push(ref);
+                }
+              }}
               overshootLeft={false}
               containerStyle={styles.swipeableContainer}
               renderLeftActions={() => (
                 <Pressable
                   style={styles.swipeableRemove}
-                  onPress={() => handleRemove(item.id)}
+                  onPress={() => handleRemove(item.id, index)}
                 >
                   <Trash size={32} color={THEME.COLORS.GREY_100} />
                 </Pressable>
